@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>LightNote</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <button id="btn-new">🆕 Nouveau</button>
+    <button id="btn-import">📂 Importer</button>
+    <button id="btn-save">💾 Sauvegarder</button>
+  </div>
+
+  <!-- Tabs -->
+  <div id="tabs"></div>
+
+  <!-- Main editor + preview -->
+  <div id="main">
+    <textarea id="editor"></textarea>
+    <div id="preview"></div>
+  </div>
+
+  <!-- Renderer script -->
+  <script type="module" src="render.js"></script>
+</body>
+</html>

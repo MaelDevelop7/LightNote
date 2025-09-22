@@ -1,0 +1,44 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+}
+
+#toolbar {
+  background: #f0f0f0;
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
+}
+
+#tabs {
+  display: flex;
+  background: #ddd;
+  border-bottom: 1px solid #ccc;
+}
+
+.tab {
+  padding: 5px 10px;
+  cursor: pointer;
+  border-right: 1px solid #bbb;
+}
+
+.tab.active {
+  background: #fff;
+  font-weight: bold;
+}
+
+#main {
+  display: flex;
+  height: calc(100vh - 60px); /* toolbar + tabs */
+}
+
+#editor, #preview {
+  flex: 1;
+  padding: 10px;
+  font-family: monospace;
+  overflow: auto;
+}
+
+#preview {
+  border-left: 1px solid #ccc;
+  background: #f9f9f9;
+}
