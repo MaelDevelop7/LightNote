@@ -4,16 +4,21 @@
   "main": "main.js",
   "description": "This application is a ligh blocnote",
   "author": "Mael Gruand",
-
   "scripts": {
     "start": "electron .",
     "build": "electron-builder"
   },
   "devDependencies": {
     "electron": "^30.0.0",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "lite-server": "^2.6.1"
   },
   "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/cli": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/filesystem": "^7.1.4",
+    "@capawesome/capacitor-file-picker": "^7.2.0",
     "marked": "^16.3.0"
   },
   "build": {

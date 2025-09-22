@@ -1,73 +1,79 @@
-import { marked } from '../node_modules/marked/lib/marked.esm.js';
-const { ipcRenderer } = require('electron');
-
-// DOM elements
-const editor = document.getElementById("editor");
-const preview = document.getElementById("preview");
-const tabsContainer = document.getElementById("tabs");
-const btnNew = document.getElementById("btn-new");
-const btnImport = document.getElementById("btn-import");
-const btnSave = document.getElementById("btn-save");
-
-// Multi-tabs
 let tabs = [];
-let activeTabId = null;
-let nextTabId = 1;
+let activeTab = 0;
 
+const editor = document.getElementById('editor');
+const preview = document.getElementById('preview');
+const tabsDiv = document.getElementById('tabs');
+
+// 🔹 Gestion des onglets
 function renderTabs() {
-  tabsContainer.innerHTML = "";
-  tabs.forEach(tab => {
-    const tabEl = document.createElement("div");
-    tabEl.classList.add("tab");
-    if(tab.id === activeTabId) tabEl.classList.add("active");
-    tabEl.textContent = tab.title;
-    tabEl.onclick = () => switchTab(tab.id);
-    tabsContainer.appendChild(tabEl);
+  tabsDiv.innerHTML = '';
+  tabs.forEach((tab, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = tab.title;
+    btn.onclick = () => switchTab(i);
+    tabsDiv.appendChild(btn);
   });
 }
 
-function switchTab(id) {
-  activeTabId = id;
-  const tab = tabs.find(t => t.id === id);
-  editor.value = tab.content;
-  updatePreview();
+function switchTab(index) {
+  activeTab = index;
+  editor.value = tabs[index].content;
+  renderMarkdown();
+}
+function renderMarkdown() {
+  // certaines versions utilisent marked.parse()
+  const html = (typeof marked === "function") 
+    ? marked(editor.value) 
+    : marked.parse(editor.value);
+
+  preview.innerHTML = html;
+
+  if (tabs[activeTab]) tabs[activeTab].content = editor.value;
+}
+
+// 🔹 Toolbar actions
+document.getElementById('btn-new').onclick = () => {
+  tabs.push({ title: 'Nouvelle Note', content: '' });
   renderTabs();
-}
+  switchTab(tabs.length - 1);
+};
 
-function createTab(title = "Sans titre", content = "", filePath = null) {
-  const id = nextTabId++;
-  tabs.push({ id, title, content, filePath });
-  activeTabId = id;
-  editor.value = content;
-  updatePreview();
-  renderTabs();
-}
+// 🔹 Import fichiers pour le Web
+document.getElementById('btn-import').onclick = () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.txt,.md';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      tabs.push({ title: file.name, content: reader.result });
+      renderTabs();
+      switchTab(tabs.length - 1);
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+};
 
-// Markdown preview
-function updatePreview() {
-  preview.innerHTML = marked(editor.value);
-}
+// 🔹 Sauvegarde fichiers pour le Web
+document.getElementById('btn-save').onclick = () => {
+  const tab = tabs[activeTab];
+  if (!tab) return;
+  const blob = new Blob([tab.content], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = tab.title + '.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
 
-// Editor input
-editor.addEventListener("input", () => {
-  if (!activeTabId) return;
-  const tab = tabs.find(t => t.id === activeTabId);
-  tab.content = editor.value;
-  updatePreview();
-});
+// 🔹 Markdown live preview
+editor.addEventListener('input', renderMarkdown);
 
-// Buttons
-btnNew.addEventListener("click", () => createTab());
-btnImport.addEventListener("click", async () => {
-  const content = await ipcRenderer.invoke('import-file');
-  if(content !== "") createTab("Fichier importé", content);
-});
-btnSave.addEventListener("click", async () => {
-  if(!activeTabId) return;
-  const tab = tabs.find(t => t.id === activeTabId);
-  tab.content = editor.value;
-  await ipcRenderer.invoke('save-file', tab.content);
-});
-
-// Create initial tab
-createTab();
+// 🔹 Créer un onglet initial
+tabs.push({ title: 'Nouvelle Note', content: '' });
+renderTabs();
+switchTab(0);
